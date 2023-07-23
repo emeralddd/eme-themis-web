@@ -1,0 +1,8 @@
+/node_modules
+/client
+/database/data.json
+.env
+request.http
+
+/attachments/*
+/uploads/logs/*

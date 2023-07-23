@@ -1,0 +1,30 @@
+{
+  "name": "eme-themis-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon index.js -e js --ignore client/",
+    "client": "npm run start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix client",
+    "start": "set NODE_ENV=production&&node index.js"
+  },
+  "author": "emeralddd",
+  "license": "ISC",
+  "dependencies": {
+    "argon2": "^0.30.2",
+    "chokidar": "^3.5.3",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "prismjs": "^1.29.0",
+    "socket.io": "^4.5.4"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "nodemon": "^2.0.20"
+  }
+}
