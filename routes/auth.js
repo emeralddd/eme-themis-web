@@ -9,11 +9,11 @@ const { ERROR_500, WRONG_ACCOUNT, MISSING_LOGIN_INFO, LOGIN_FAIL, LOGIN_SUCCESS,
 const router = express.Router();
 
 //Verify User
-router.get('/', verifyToken, async(req, res) => {
+router.get('/', verifyToken, async (req, res) => {
     // console.log('auth');
     try {
         const foundUser = db.get(req.executor.username);
-        if(!foundUser) {
+        if (!foundUser) {
             return res.status(400).json({
                 success: false,
                 message: WRONG_ACCOUNT
@@ -28,7 +28,7 @@ router.get('/', verifyToken, async(req, res) => {
             success: true,
             payload: foundUser
         })
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(500).json({
             success: false,
@@ -39,43 +39,43 @@ router.get('/', verifyToken, async(req, res) => {
 
 //Login
 router.post('/login', async (req, res) => {
-    const {username, password} = req.body;
-    if(!username || !password) {
+    const { username, password } = req.body;
+    if (!username || !password) {
         return res.status(400).json({
-            success: false, 
+            success: false,
             message: MISSING_LOGIN_INFO
         });
     }
-    
+
     try {
-        const foundUser = db.get(username);
+        const foundUser = db.get(username.toLowerCase());
 
         // console.log(foundUser);
 
-        if(!foundUser) {
+        if (!foundUser) {
             return res.status(400).json({
-                success: false, 
+                success: false,
                 message: LOGIN_FAIL
             });
         }
 
         // console.log(foundUser.password, password)
-        
-        const passwordCheck = await argon2.verify(foundUser.password,password);
+
+        const passwordCheck = await argon2.verify(foundUser.password, password);
 
         // console.log(passwordCheck);
-        
-        if(!passwordCheck) {
+
+        if (!passwordCheck) {
             return res.status(400).json({
-                success: false, 
+                success: false,
                 message: LOGIN_FAIL
             });
         }
 
         const accessToken = jwt.sign(
-            {username: foundUser.username},
+            { username: foundUser.username },
             process.env.SECRET_TOKEN,
-            {expiresIn: "7d"}
+            { expiresIn: "7d" }
         );
 
         res.json({
@@ -95,39 +95,39 @@ router.post('/login', async (req, res) => {
 //Register
 router.post('/register', async (req, res) => {
     // console.log('register');
-    const {password, username} = req.body;
+    const { password, username } = req.body;
     // console.log(password,username);
-    if(!username || !password) {
+    if (!username || !password) {
         return res.status(400).json({
-            success: false, 
+            success: false,
             message: MISSING_LOGIN_INFO
         });
     }
-    
-    try {
-        const foundUser = db.get(username);
 
-        if(foundUser) {
+    try {
+        const foundUser = db.get(username.toLowerCase());
+
+        if (foundUser) {
             return res.status(400).json({
-                success: false, 
+                success: false,
                 message: USERNAME_EXIST
             });
         }
-        
+
         const hasedPassword = await argon2.hash(password);
-        
+
         const newUser = {
-            username,
+            username: username.toLowerCase(),
             password: hasedPassword
         };
 
         await db.set(newUser);
 
         const accessToken = jwt.sign({
-                username: username
-            },
+            username: username.toLowerCase()
+        },
             process.env.SECRET_TOKEN,
-            {expiresIn: "7d"}
+            { expiresIn: "7d" }
         );
 
         res.json({
