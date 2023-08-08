@@ -1,4 +1,4 @@
-const { readFileSync, writeFile } = require('fs');
+const { readFileSync, writeFile, existsSync, writeFileSync } = require('fs');
 
 let storage, indexManager = new Map();
 
@@ -12,6 +12,14 @@ const saveData = async () => {
 }
 
 module.exports.importData = () => {
+    if (!existsSync(`${__dirname}/data.json`)) {
+        writeFileSync(`${__dirname}/data.json`, '[]', 'utf8', err => {
+            if (err) {
+                console.error(err);
+            }
+        });
+    }
+
     const tmp = readFileSync(`${__dirname}/data.json`, 'utf8');
     storage = JSON.parse(tmp);
     for (let i = 0; i < storage.length; i++) {

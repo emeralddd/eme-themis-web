@@ -21,6 +21,15 @@ const authRouter = require('./routes/auth');
 const judgeRouter = require('./routes/judge');
 const filesRouter = require('./routes/files');
 const { handleLog, handleSubmission } = require('./database/processSubmissions.js');
+const { existsSync, mkdirSync } = require('fs');
+
+const requiredFolders = ['./attachments', './uploads', './uploads/logs', './uploads/queue'];
+
+requiredFolders.forEach(folder => {
+    if (!existsSync(folder)) {
+        mkdirSync(folder);
+    }
+});
 
 db.importData();
 
