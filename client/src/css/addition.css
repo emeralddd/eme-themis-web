@@ -1,0 +1,18 @@
+.hide-scroll::-webkit-scrollbar {
+    display: none;
+}
+  
+.hide-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.off-button {
+    filter: invert(23%) sepia(6%) saturate(1312%) hue-rotate(327deg) brightness(102%) contrast(89%);
+}
+
+@layer utilities {
+    .off-button-hover {
+        filter: invert(83%) sepia(5%) saturate(248%) hue-rotate(320deg) brightness(83%) contrast(88%);
+    }
+}

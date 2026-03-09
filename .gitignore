@@ -1,12 +1,11 @@
 # Modules
-/node_modules
-client/node_modules
+node_modules
 
 # Build
-/build
+build
 
 # Database
-/database/data.json
+data.json
 
 # Misc
 .env
@@ -14,14 +13,33 @@ request.http
 unit-test
 
 # File upload
-/attachments/*
-/uploads/logs/*
-/uploads/queue/*
-
-# ...
-.next
-next-env.d.ts
-
-build
+/server/attachments/*
+/server/uploads/logs/*
+/server/uploads/queue/*
 
 test.cpp
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
