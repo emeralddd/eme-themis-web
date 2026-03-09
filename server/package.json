@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "npm run dev --prefix server",
-    "client": "npm run dev --prefix client",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "nodemon index.js -e js --ignore client/",
+    "start": "set NODE_ENV=production&&node index.js"
   },
   "author": "emeralddd",
   "license": "ISC",

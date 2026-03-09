@@ -1,14 +1,13 @@
 const express = require('express');
-const db = require('../database/manager');
-const {readFileSync, readdirSync, readFile, statSync, stat} = require('fs');
+const { readFileSync, readdirSync, readFile, statSync, stat } = require('fs');
 
 const verifyToken = require('../middleware/validate');
-const { PATH_NOT_EXIST } = require('../VariableName');
+const { PATH_NOT_EXIST } = require('../utils/VariableName');
 const path = require('path');
 const router = express.Router();
 
 //Get Ranking
-router.get('/getAttachments', verifyToken, async(req, res) => {
+router.get('/getAttachments', verifyToken, async (req, res) => {
     const dir = req.query.path;
 
     //path = / => attachment//
@@ -16,16 +15,16 @@ router.get('/getAttachments', verifyToken, async(req, res) => {
     //path = /abc/xyz.docx => attachment//abc/xyz.docx
 
     try {
-        const dirPath = path.join(__dirname,`../attachments/${dir}`);
-        const ls = readdirSync(dirPath,{
+        const dirPath = path.join(__dirname, `../attachments/${dir}`);
+        const ls = readdirSync(dirPath, {
             withFileTypes: true
         });
-        
+
         const statRequests = [];
-        
-        for(const i of ls) {
+
+        for (const i of ls) {
             statRequests.push(new Promise((resolve, reject) => {
-                stat(`${dirPath}/${i.name}`,(_,stats) => {
+                stat(`${dirPath}/${i.name}`, (_, stats) => {
                     resolve({
                         name: i.name,
                         date: stats.birthtime,
@@ -33,7 +32,7 @@ router.get('/getAttachments', verifyToken, async(req, res) => {
                         isFolder: i.isDirectory()
                     });
                 });
-                
+
                 // readFile(`${dirPath}/${i.name}`,(_,buffer) => {
                 //     resolve({
                 //         name: i.name,
@@ -43,18 +42,18 @@ router.get('/getAttachments', verifyToken, async(req, res) => {
                 // });
             }));
         }
-        
-        const statResult = await Promise.all(statRequests);
-        const folders=[], files=[];
 
-        for(const i of statResult) {
-            if(i.isFolder) {
+        const statResult = await Promise.all(statRequests);
+        const folders = [], files = [];
+
+        for (const i of statResult) {
+            if (i.isFolder) {
                 folders.push(i);
             } else {
                 files.push(i);
             }
         }
-    
+
         res.json({
             success: true,
             payload: {
@@ -71,12 +70,12 @@ router.get('/getAttachments', verifyToken, async(req, res) => {
     }
 });
 
-router.get('/getAttachmentBuffer', verifyToken, async(req, res) => {
+router.get('/getAttachmentBuffer', verifyToken, async (req, res) => {
     const dir = req.query.path;
 
     try {
-        const buffer = readFileSync(path.join(__dirname,`../attachments/${dir}`));
-    
+        const buffer = readFileSync(path.join(__dirname, `../attachments/${dir}`));
+
         res.json({
             success: true,
             payload: buffer

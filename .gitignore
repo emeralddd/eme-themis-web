@@ -1,9 +1,27 @@
+# Modules
 /node_modules
-/client
+client/node_modules
+
+# Build
+/build
+
+# Database
 /database/data.json
+
+# Misc
 .env
 request.http
+unit-test
 
+# File upload
 /attachments/*
 /uploads/logs/*
 /uploads/queue/*
+
+# ...
+.next
+next-env.d.ts
+
+build
+
+test.cpp

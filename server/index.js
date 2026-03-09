@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const fileupload = require("express-fileupload");
 const cors = require('cors');
-const db = require('./database/manager.js');
 const chokidar = require('chokidar');
 require('dotenv').config();
 const { createServer } = require("http");
@@ -20,7 +19,7 @@ const io = new Server(httpServer, {
 const authRouter = require('./routes/auth');
 const judgeRouter = require('./routes/judge');
 const filesRouter = require('./routes/files');
-const { handleLog, handleSubmission } = require('./database/processSubmissions.js');
+const { handleLog, handleSubmission } = require('./utils/processSubmissions.js');
 const { existsSync, mkdirSync } = require('fs');
 
 const requiredFolders = ['./attachments', './uploads', './uploads/logs', './uploads/queue'];
@@ -30,8 +29,6 @@ requiredFolders.forEach(folder => {
         mkdirSync(folder);
     }
 });
-
-db.importData();
 
 // app.use(cors());
 app.use(express.json());

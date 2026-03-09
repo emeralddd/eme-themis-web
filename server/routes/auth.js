@@ -1,18 +1,19 @@
+const { db } = require('../database/manager.js');
+
 const express = require('express');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
-const db = require('../database/manager');
 require('dotenv').config();
 
 const verifyToken = require('../middleware/validate');
-const { ERROR_500, WRONG_ACCOUNT, MISSING_LOGIN_INFO, LOGIN_FAIL, LOGIN_SUCCESS, USERNAME_EXIST, SUCCESS } = require('../VariableName');
+const { ERROR_500, WRONG_ACCOUNT, MISSING_LOGIN_INFO, LOGIN_FAIL, LOGIN_SUCCESS, USERNAME_EXIST, SUCCESS } = require('../utils/VariableName.js');
 const router = express.Router();
 
 //Verify User
 router.get('/', verifyToken, async (req, res) => {
     // console.log('auth');
     try {
-        const foundUser = db.get(req.executor.username);
+        const foundUser = await db.findOneAsync({ username: req.executor.username }, { password: 0 });
         if (!foundUser) {
             return res.status(400).json({
                 success: false,
@@ -20,14 +21,12 @@ router.get('/', verifyToken, async (req, res) => {
             });
         }
 
-        // console.log(foundUser);
-
         delete foundUser.password;
 
         res.json({
             success: true,
             payload: foundUser
-        })
+        });
     } catch (err) {
         console.log(err);
         return res.status(500).json({
@@ -48,9 +47,7 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-        const foundUser = db.get(username.toLowerCase());
-
-        // console.log(foundUser);
+        const foundUser = await db.findOneAsync({ username: username.toLowerCase() });
 
         if (!foundUser) {
             return res.status(400).json({
@@ -94,9 +91,7 @@ router.post('/login', async (req, res) => {
 
 //Register
 router.post('/register', async (req, res) => {
-    // console.log('register');
     const { password, username } = req.body;
-    // console.log(password,username);
     if (!username || !password) {
         return res.status(400).json({
             success: false,
@@ -105,7 +100,7 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        const foundUser = db.get(username.toLowerCase());
+        const foundUser = await db.findOneAsync(username.toLowerCase());
 
         if (foundUser) {
             return res.status(400).json({
@@ -118,10 +113,11 @@ router.post('/register', async (req, res) => {
 
         const newUser = {
             username: username.toLowerCase(),
-            password: hasedPassword
+            password: hasedPassword,
+            problems: []
         };
 
-        await db.set(newUser);
+        await db.insertAsync(newUser);
 
         const accessToken = jwt.sign({
             username: username.toLowerCase()
