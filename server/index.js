@@ -10,11 +10,7 @@ const { Server } = require("socket.io");
 const PORT = process.env.PORT || 8000;
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-    }
-});
+const io = new Server(httpServer);
 
 const authRouter = require('./routes/auth');
 const judgeRouter = require('./routes/judge');
