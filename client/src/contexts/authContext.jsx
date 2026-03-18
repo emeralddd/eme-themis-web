@@ -1,5 +1,6 @@
-import { createContext, useReducer,useEffect} from 'react';
+import { createContext, useReducer,useEffect, useMemo} from 'react';
 import { AuthReducer } from '../reducer/authReducer';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import {
     apiURL,
@@ -10,77 +11,74 @@ import SetAuthToken from '../utils/SetAuthToken';
 export const AuthContext = createContext();
 
 const AuthContextProvider = ({children}) => {
-    const [authState,dispatch] = useReducer(AuthReducer, {
-        authLoading: true,
-        isAuthenticated: false,
-        user: null
-    });
-
+    const queryClient = useQueryClient();
+    
     const loadUser = async () => {
-        if(localStorage[LOCAL_STORAGE_TOKEN_NAME]) {
-            SetAuthToken(localStorage[LOCAL_STORAGE_TOKEN_NAME]);
+        const token = localStorage[LOCAL_STORAGE_TOKEN_NAME];
+        
+        if(!token) {
+            return null;
         }
-
-        try {
-            const response = await axios.get(`${apiURL}/auth`);
-            // console.log(response.data.payload);
-            if(response.data.success) {
-                dispatch({type: SET_AUTH, payload: {
-                    isAuthenticated: true, 
-                    user: response.data.payload
-                }});
-            }
-        } catch(error) {
+        
+        SetAuthToken(token);
+        const response = await axios.get(`${apiURL}/auth`);
+        return response.data.payload;        
+    };
+    
+    const { data: user, isLoading, isError } = useQuery({
+        queryKey: ['authUser'],
+        queryFn: loadUser,
+        retry: false,
+        staleTime: Infinity
+    });
+    
+    useEffect(() => {
+        if(isError) {
             localStorage.removeItem(LOCAL_STORAGE_TOKEN_NAME);
             SetAuthToken(null);
-            dispatch({type: SET_AUTH, payload: {
-                isAuthenticated: false,
-                user: null
-            }});
+            queryClient.setQueryData(['authUser'], null);
         }
-    };
+    }, [isError]);
 
-    useEffect(() => {
-        loadUser()
-    },[]);
-
+    const loginMutation = useMutation({
+        mutationFn: (userForm) => axios.post(`${apiURL}/auth/login`, userForm),
+        onSuccess: (response) => {
+            if(response.data.success) {
+                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME, response.data.payload);
+                queryClient.invalidateQueries({ queryKey: ['authUser'] });
+            }
+        }
+    });
+    
     const loginUser = async userForm => {
         try {
-            const response = await axios.post(`${apiURL}/auth/login`,userForm);
-
-            if(response.data.success) {
-                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME,response.data.payload);
-            }
-
-            await loadUser();
-
+            const response = await loginMutation.mutateAsync(userForm);
             return response.data;
         } catch (error) {
-            if(error.response.data) {
-                return error.response.data;
-            } else return {
+            return error.response?.data || {
                 success: false, 
                 message: error.message
             };
         }
     };
 
+    const registerMutation = useMutation({
+        mutationFn: (userForm) => axios.post(`${apiURL}/auth/register`, userForm),
+        onSuccess: (response) => {
+            if(response.data.success) {
+                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME, response.data.payload);
+                queryClient.invalidateQueries({ queryKey: ['authUser'] });
+            }
+        }
+    });
+
     const registerUser = async userForm => {
         try {
-            const response = await axios.post(`${apiURL}/auth/register`,userForm);
-            if(response.data.success) {
-                // console.log(LOCAL_STORAGE_TOKEN_NAME,response.data.payload);
-                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME,response.data.payload);
-            }
-
-            await loadUser();
-
+            const response = await registerMutation.mutateAsync(userForm);
             return response.data;
         } catch (error) {
-            if(error.response.data) {
-                return error.response.data;
-            } else return {
-                success: false, 
+            return error.response?.data || {
+                success: false,
                 message: error.message
             };
         }
@@ -88,15 +86,19 @@ const AuthContextProvider = ({children}) => {
 
     const logoutUser = () => {
         localStorage.removeItem(LOCAL_STORAGE_TOKEN_NAME);
-        dispatch({type: SET_AUTH, payload: {
-            isAuthenticated: false,
-            user: null
-        }});
+        SetAuthToken(null);
+        queryClient.setQueryData(['authUser'], null);
     };
+
+    const authState = useMemo(() =>  ({
+        authLoading: isLoading,
+        isAuthenticated: !!user,
+        user: user || null
+    }), [user, isLoading]);
 
     const authContextData = {
         loginUser, 
-        logoutUser, 
+        logoutUser,
         registerUser,
         authState
     };
