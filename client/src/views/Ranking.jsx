@@ -3,50 +3,62 @@ import { useEffect, useState } from "react";
 import SingleFunction from "../components/layout/SingleFunction"
 import { apiURL } from "../utils/VariableName";
 import moment from 'moment';
+import { useQuery } from "@tanstack/react-query";
 
 const Ranking = () => {
-    const [problems, setProblems] = useState([]);
-    const [users, setUsers] = useState([]);
 
-    const getData = async () => {
-        const response = await axios.get(`${apiURL}/judge/getRanking`);
-        const problems = response.data.payload.problems;
-        setProblems(problems);
-        const mp = [];
+    const indexCandidates = (payload) => {
+        const problems = payload.problems;
 
-        for (let i = 0; i < problems.length; i++) {
-            mp[problems[i]] = i;
-        }
+        const problemMap = {};
 
-        const users = [];
+        problems.forEach((problem, index) => {
+            problemMap[problem] = index;
+        });
 
-        let lastPoint = -1, index = 0;
+        const usersData = payload.users
+        
+        let lastUserTotalPoint = -1, rankIndex = 0;
 
-        for (const u of response.data.payload.users) {
-            const arr = Array(problems.length).fill('∄');
-            for (const p of u.details) {
-                arr[mp[p.name]] = p.point;
-            }
-
-            if (lastPoint !== u.total) {
-                lastPoint = u.total;
-                index++;
-            }
-
-            users.push({
-                index,
-                username: u.username,
-                total: u.total,
-                details: arr
+        const users = usersData.map(user => {
+            const resultRow = Array(problems.length).fill('∄');
+            user.details.forEach(detail => {
+                resultRow[problemMap[detail.name]] = detail.point;
             });
-        }
 
-        setUsers(users);
+            if (lastUserTotalPoint !== user.total) {
+                lastUserTotalPoint = user.total;
+                rankIndex++;
+            }
+
+            return {
+                index: rankIndex,
+                username: user.username,
+                total: user.total,
+                details: resultRow
+            };
+        });
+
+        return {
+            problems,
+            users
+        }
     }
 
-    useEffect(() => {
-        getData();
-    }, []);
+    const getDataForRanking = async () => {
+        const response = await axios.get(`${apiURL}/judge/getRanking`);
+        return response.data.payload;
+    }
+
+    const { data: rankingData, isLoading } = useQuery({
+        queryKey: ['ranking'],
+        queryFn: getDataForRanking,
+        select: indexCandidates,
+        staleTime: 60000
+    });
+
+    const problems = rankingData?.problems || [];
+    const users = rankingData?.users || [];
 
     const content = (
         <div className="mx-6">
@@ -66,8 +78,8 @@ const Ranking = () => {
                             <th className="px-2 border-l-2">Username</th>
                             <th className="border-x-2 px-2">Total</th>
                             {
-                                problems.map(p => (
-                                    <th className="px-2 border-x-2">{p}</th>
+                                problems.map((p,index) => (
+                                    <th key={index} className="px-2 border-x-2">{p}</th>
                                 ))
                             }
                         </tr>
@@ -75,14 +87,14 @@ const Ranking = () => {
                     </thead>
                     <tbody className="">
                         {
-                            users.map(u => (
-                                <tr className="odd:bg-white even:bg-slate-100 h-12">
+                            users.map((u, userIndex) => (
+                                <tr key={userIndex} className="odd:bg-white even:bg-slate-100 h-12">
                                     <td className="text-center py-1 w-20">{u.index}</td>
                                     <td className="border-l-2 px-4 font-mont font-medium">{u.username}</td>
                                     <td className="border-x-2 text-center font-bold">{u.total}</td>
                                     {
-                                        u.details.map(d => (
-                                            <td className="text-center border-x-2">{d}</td>
+                                        u.details.map((d, index) => (
+                                            <td key={index} className="text-center border-x-2">{d}</td>
                                         ))
                                     }
                                 </tr>
