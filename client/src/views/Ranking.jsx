@@ -18,25 +18,26 @@ const Ranking = () => {
 
         const usersData = payload.users
         
-        let lastUserTotalPoint = -1, rankIndex = 0;
-
         const users = usersData.map(user => {
             const resultRow = Array(problems.length).fill('∄');
-            user.details.forEach(detail => {
-                resultRow[problemMap[detail.name]] = detail.point;
+            const totalPoint = user.problems.reduce((acc, problem) => acc + problem.score, 0);
+            user.problems.forEach(problem => {
+                resultRow[problemMap[problem.name]] = problem.score;
             });
-
-            if (lastUserTotalPoint !== user.total) {
-                lastUserTotalPoint = user.total;
-                rankIndex++;
-            }
-
+            
             return {
-                index: rankIndex,
                 username: user.username,
-                total: user.total,
+                total: totalPoint,
                 details: resultRow
             };
+        }).sort((a, b) => b.total - a.total || a.username.localeCompare(b.username));
+        
+        users.forEach((user, index) => {
+            if (index === 0 || user.total !== users[index - 1].total) {
+                user.index = index + 1;
+            } else {
+                user.index = users[index - 1].index;
+            }
         });
 
         return {
