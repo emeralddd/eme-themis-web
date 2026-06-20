@@ -1,4 +1,4 @@
-const { db } = require('../database/manager.js');
+const { db } = require('../database/datasource.js');
 
 const { rm, rename } = require('fs/promises');
 const { readFileSync } = require('fs');
@@ -8,22 +8,19 @@ const fetchPath = (path) => {
     return [...fileAdded[0].replaceAll('[', ']').split(']').filter(v => v), fileAdded[1]];
 }
 
+// status: 0 - waiting for judger, 1 - judging, 2 - judged, 3 - not judge
+// error: null if no error, otherwise: 1 - ℱ, 2 - ⚠, 3 - C
+
 const statusEncode = {
-    'ℱ': 2,
-    '⚠': 3,
-    'C': 4
+    'ℱ': 1,
+    '⚠': 2,
+    'C': 3
 }
 
 module.exports.handleLog = async (path, io) => {
     const [md5, username, problemName] = fetchPath(path);
 
-    const user = await db.findOneAsync({ username });
-
-    if (!user) return;
-
     io.emit("reload", { data: username });
-
-    if (!user.problems) return;
 
     let index = -1;
 
@@ -60,51 +57,34 @@ module.exports.handleLog = async (path, io) => {
 module.exports.handleSubmission = async (path, io) => {
     const [md5, username, problemName, extension] = fetchPath(path);
 
-    // console.log('hey');
-
     io.emit("reload", { data: username });
-    const user = await db.findOneAsync({ username });
-    if (!user) return;
-    if (!user.problems) user.problems = [];
-
-    let index = -1;
-
-    for (let i = 0; i < user.problems.length; i++) {
-        if (user.problems[i].name === problemName) {
-            index = i;
-            break;
-        }
-    }
 
     try {
         const fileContent = readFileSync(`${path}`, 'utf-8');
 
-        if (index === -1) {
-            user.problems.push({
-                name: problemName,
-                point: 0,
-                attemps: 0
+        const submissionWithSameMD5 = await db.submissions.findOneAsync({ md5 });
+
+        if (submissionWithSameMD5) {
+            return rm(`./uploads/${user.problems[index].latest}[${username}][${problemName}].${extension}`, {
+                force: true
+            }).catch(err => {
+                console.log(err);
             });
-            index = user.problems.length - 1;
         }
 
-        // console.log(index);
-
-        if (user.problems[index].latest === md5) return;
-
-        console.log(`./uploads/${user.problems[index].latest}[${username}][${problemName}].${extension}`);
-
-        rm(`./uploads/${user.problems[index].latest}[${username}][${problemName}].${extension}`, {
-            force: true
-        }).catch(err => {
-            console.log(err);
-        });
-
-        user.problems[index].code = fileContent;
-        user.problems[index].attemps++;
-        user.problems[index].latest = md5;
-        user.problems[index].log = "";
-        user.problems[index].status = 0;
+        const newSubmission = {
+            username,
+            problem: problemName,
+            fileContent,
+            md5,
+            score: 0,
+            status: 1,
+            error: null,
+            logs: '',
+            submissionTime: new Date(),
+        };
+        
+        await db.submissions.insertAsync(newSubmission);
 
         rename(`${path}`, `./uploads/${md5}[${username}][${problemName}].${extension}`);
 
@@ -116,7 +96,6 @@ module.exports.handleSubmission = async (path, io) => {
 
         // console.log(user);
 
-        await db.updateAsync({ username }, { $set: { problems: user.problems } }, {});
     } catch (err) {
         console.error(err);
     }
