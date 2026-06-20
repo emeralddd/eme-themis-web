@@ -109,7 +109,7 @@ router.post('/register', async (req, res) => {
         const newUser = {
             username: username.toLowerCase(),
             password: hasedPassword,
-            problems: []
+            role: 0
         };
 
         await db.users.insertAsync(newUser);
