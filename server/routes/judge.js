@@ -43,7 +43,7 @@ router.get('/getRanking', verifyToken, async (req, res) => {
         const data = await db.submissions
             .findAsync({ status: 2 })
             .sort({ submissionTime: -1 });
-            
+
         // Create a list of participants and their best score for each problem
         const participants = [];
 
@@ -85,6 +85,37 @@ router.get('/getRanking', verifyToken, async (req, res) => {
                 users: participants
             }
         });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: ERROR_500
+        });
+    }
+});
+
+// Get user problems
+router.get('/getUserProblems', verifyToken, async (req, res) => {
+    try {
+        const userSubmissions = await db.submissions
+            .findAsync({ username: req.executor.username })
+            .sort({ problem: 1, submissionTime: -1 });
+        
+        const problems = [];
+
+        for (const submission of userSubmissions) {
+            // If the participant doesn't have a score for the problem, add it to their list of problems
+            // We only add the first accepted submission for each problem, since the data is sorted by submission time
+            if (!problems.some(p => p.problem === submission.problem)) {
+                problems.push(submission);
+            }
+        }
+
+        res.json({
+            success: true,
+            payload: problems
+        });
+
     } catch (err) {
         console.log(err);
         return res.status(500).json({
