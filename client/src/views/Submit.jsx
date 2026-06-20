@@ -8,6 +8,7 @@ import DoubleFunction from "../components/layout/DoubleFunction";
 import Prism from "prismjs";
 import 'prismjs/components/prism-c';
 import 'prismjs/components/prism-cpp';
+import { useQuery } from "@tanstack/react-query";
 
 const WorkingArea = () => {
     const { authState: { authLoading, user } } = useContext(AuthContext);
@@ -34,7 +35,19 @@ const WorkingArea = () => {
 
     useEffect(() => {
         Prism.highlightAll();
-    }, [log])
+    }, [log]);
+
+    const getProblems = async () => {
+        const response = await axios.get(`${apiURL}/judge/getUserProblems`);
+        console.log(response.data.payload);
+        return response.data.payload;
+    }
+
+    const { data: problemData, isLoading } = useQuery({
+        queryKey: ['problems'],
+        queryFn: getProblems,
+        staleTime: 60000
+    });
 
     const onChangeFile = event => {
         setFile(event.target.files[0]);
@@ -62,9 +75,13 @@ const WorkingArea = () => {
         );
     }
 
-    const bg = ['bg-[#180600]', 'bg-green-400', 'bg-yellow-400', 'bg-red-400', 'bg-gray-400'];
-    const sta = ['', '', 'ℱ', '⚠', ''];
-    const strSta = ['Đang chấm', 'Đã chấm', 'Dịch bị lỗi', 'Lỗi nghiêm trọng', 'Chưa chấm'];
+    // status: 0 - waiting for judger, 1 - judging, 2 - judged, 3 - ℱ, 4- ⚠, 5 - C
+
+    const bg = ['bg-[#180600]', 'bg-[#180600]', 'bg-green-400', 'bg-yellow-400', 'bg-red-400', 'bg-gray-400'];
+    const sta = ['', '', '', 'ℱ', '⚠', ''];
+    const strSta = ['Đang chờ máy chấm', 'Đang chấm', 'Đã chấm', 'Dịch bị lỗi', 'Lỗi nghiêm trọng', 'Chưa chấm'];
+
+    const problems = problemData || [];
 
     const content1 = (
         <div className="mx-6">
@@ -92,16 +109,16 @@ const WorkingArea = () => {
 
             <div className="flex flex-col gap-2">
                 {
-                    user.problems.map((problem, i) => (
-                        <div className={`${log && log.name === problem.name ? `bg-gray-200` : `bg-white`} font-bold border border-slate-300 flex flex-col rounded p-2 hover:cursor-pointer overflow-y-auto`} onClick={onClickChangeLog.bind(this, problem)} >
+                    problems.map((problem, i) => (
+                        <div className={`${log && log.name === problem.problem ? `bg-gray-200` : `bg-white`} font-bold border border-slate-300 flex flex-col rounded p-2 hover:cursor-pointer overflow-y-auto`} onClick={onClickChangeLog.bind(this, problem)} >
                             <div className='flex gap-4'>
                                 <div className={`${bg[problem.status]} rounded w-20 flex items-center justify-center`}>
                                     {
-                                        problem.status === 0 ? (
+                                        problem.status === 1 ? (
                                             <div className="load-spin rounded-full h-8 w-8 border-[8px] border-white border-t-[8px] border-t-yellow-400"></div>
                                         ) : (
                                             <div className="">
-                                                {problem.status === 1 ? problem.point : sta[problem.status]}
+                                                {problem.status === 2 ? problem.point : sta[problem.status]}
                                             </div>
                                         )
                                     }
@@ -109,14 +126,14 @@ const WorkingArea = () => {
 
                                 <div className="font-mont flex flex-col">
                                     <div className="text-lg">
-                                        {problem.name}
+                                        {problem.problem}
                                     </div>
                                     <div className="text-xs text-gray-400">
-                                        MD5: {problem.latest}
+                                        MD5: {problem.md5}
                                     </div>
-                                    <div className="text-xs text-gray-400">
+                                    {/* <div className="text-xs text-gray-400">
                                         Attemps: {problem.attemps}
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         </div>
@@ -135,32 +152,32 @@ const WorkingArea = () => {
             <div className="mx-6 flex flex-col gap-5 mt-5">
                 <pre className="h-96 text-base rounded">
                     <code className="language-cpp">
-                        {log.code}
+                        {log.fileContent}
                     </code>
                 </pre>
 
                 <div>
                     <div className="font-mont font-bold text-3xl">
-                        {log.name}
+                        {log.problem}
                     </div>
 
                     <div className="text-base text-gray-400">
-                        MD5: {log.latest}
+                        MD5: {log.md5}
                     </div>
 
-                    <div className="text-base text-gray-400">
+                    {/* <div className="text-base text-gray-400">
                         Attemps: {log.attemps}
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="flex gap-4">
                     <div className={`${bg[log.status]} rounded py-5 flex justify-center items-center w-20 font-semibold`}>
                         {
-                            log.status === 0 ? (
+                            log.status === 1 ? (
                                 <div className="load-spin rounded-full h-12 w-12 border-[8px] border-white border-t-[8px] border-t-yellow-400"></div>
                             ) : (
                                 <div className="">
-                                    {log.status === 1 ? log.point : sta[log.status]}
+                                    {log.status === 2 ? log.point : sta[log.status]}
                                 </div>
                             )
                         }
@@ -181,7 +198,7 @@ const WorkingArea = () => {
                 </div>
 
                 <div className="border-2 text-lg border-gray-200 rounded px-5 py-3 mb-5 whitespace-pre-line">
-                    {log.log}
+                    {log.logs}
                 </div>
             </div>
         </>
