@@ -1,4 +1,4 @@
-const { db } = require('../database/manager.js');
+const { db } = require('../database/datasource.js');
 
 const express = require('express');
 const argon2 = require('argon2');
@@ -11,9 +11,8 @@ const router = express.Router();
 
 //Verify User
 router.get('/', verifyToken, async (req, res) => {
-    // console.log('auth');
     try {
-        const foundUser = await db.findOneAsync({ username: req.executor.username }, { password: 0 });
+        const foundUser = await db.users.findOneAsync({ username: req.executor.username });
         if (!foundUser) {
             return res.status(400).json({
                 success: false,
@@ -47,7 +46,7 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-        const foundUser = await db.findOneAsync({ username: username.toLowerCase() });
+        const foundUser = await db.users.findOneAsync({ username: username.toLowerCase() });
 
         if (!foundUser) {
             return res.status(400).json({
@@ -56,11 +55,7 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // console.log(foundUser.password, password)
-
         const passwordCheck = await argon2.verify(foundUser.password, password);
-
-        // console.log(passwordCheck);
 
         if (!passwordCheck) {
             return res.status(400).json({
@@ -100,7 +95,7 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        const foundUser = await db.findOneAsync(username.toLowerCase());
+        const foundUser = await db.users.findOneAsync({ username: username.toLowerCase() });
 
         if (foundUser) {
             return res.status(400).json({
@@ -117,7 +112,7 @@ router.post('/register', async (req, res) => {
             problems: []
         };
 
-        await db.insertAsync(newUser);
+        await db.users.insertAsync(newUser);
 
         const accessToken = jwt.sign({
             username: username.toLowerCase()
