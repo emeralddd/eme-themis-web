@@ -8,13 +8,12 @@ const fetchPath = (path) => {
     return [...fileAdded[0].replaceAll('[', ']').split(']').filter(v => v), fileAdded[1]];
 }
 
-// status: 0 - waiting for judger, 1 - judging, 2 - judged, 3 - not judge
-// error: null if no error, otherwise: 1 - ℱ, 2 - ⚠, 3 - C
+// status: 0 - waiting for judger, 1 - judging, 2 - judged, 3 - ℱ, 4- ⚠, 5 - C
 
 const statusEncode = {
-    'ℱ': 1,
-    '⚠': 2,
-    'C': 3
+    'ℱ': 3,
+    '⚠': 4,
+    'C': 5
 }
 
 module.exports.handleLog = async (path, io) => {
@@ -79,7 +78,6 @@ module.exports.handleSubmission = async (path, io) => {
             md5,
             score: 0,
             status: 1,
-            error: null,
             logs: '',
             submissionTime: new Date(),
         };
@@ -87,15 +85,6 @@ module.exports.handleSubmission = async (path, io) => {
         await db.submissions.insertAsync(newSubmission);
 
         rename(`${path}`, `./uploads/${md5}[${username}][${problemName}].${extension}`);
-
-        //0 - judging
-        //1 - judged
-        //2 - ce
-        //3 - caution
-        //4 - not judge
-
-        // console.log(user);
-
     } catch (err) {
         console.error(err);
     }
