@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 const Ranking = () => {
 
     const indexCandidates = (payload) => {
-        const problems = payload.problems;
+        const problems = payload.problems.sort((a, b) => a.localeCompare(b));
 
         const problemMap = {};
 
