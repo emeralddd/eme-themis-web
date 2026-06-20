@@ -118,7 +118,7 @@ const WorkingArea = () => {
                                             <div className="load-spin rounded-full h-8 w-8 border-[8px] border-white border-t-[8px] border-t-yellow-400"></div>
                                         ) : (
                                             <div className="">
-                                                {problem.status === 2 ? problem.point : sta[problem.status]}
+                                                {problem.status === 2 ? problem.score : sta[problem.status]}
                                             </div>
                                         )
                                     }
@@ -177,7 +177,7 @@ const WorkingArea = () => {
                                 <div className="load-spin rounded-full h-12 w-12 border-[8px] border-white border-t-[8px] border-t-yellow-400"></div>
                             ) : (
                                 <div className="">
-                                    {log.status === 2 ? log.point : sta[log.status]}
+                                    {log.status === 2 ? log.score : sta[log.status]}
                                 </div>
                             )
                         }
