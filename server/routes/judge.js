@@ -66,7 +66,7 @@ router.get('/getRanking', verifyToken, async (req, res) => {
             problems.push(submission.problem);
 
             // Find the participant for the submission, or create a new one if it doesn't exist
-            const userInParticipants = participants.find(p => p.username === submission.user) || newParticipant(submission.user);
+            const userInParticipants = participants.find(p => p.username === submission.username) || newParticipant(submission.username);
 
             // If the participant doesn't have a score for the problem, add it to their list of problems
             // We only add the first accepted submission for each problem, since the data is sorted by submission time
