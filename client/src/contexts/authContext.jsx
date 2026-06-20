@@ -1,11 +1,10 @@
-import { createContext, useReducer,useEffect, useMemo} from 'react';
-import { AuthReducer } from '../reducer/authReducer';
+import { createContext,useEffect, useMemo} from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import {
     apiURL,
-    LOCAL_STORAGE_TOKEN_NAME,
-    SET_AUTH} from '../utils/VariableName';
+    LOCAL_STORAGE_TOKEN_NAME
+} from '../utils/VariableName';
 import SetAuthToken from '../utils/SetAuthToken';
 
 export const AuthContext = createContext();
