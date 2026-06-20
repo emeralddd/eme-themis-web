@@ -21,36 +21,27 @@ module.exports.handleLog = async (path, io) => {
 
     io.emit("reload", { data: username });
 
-    let index = -1;
+    const submission = await db.submissions.findOneAsync({ md5 });
 
-    for (let i = 0; i < user.problems.length; i++) {
-        if (user.problems[i].name === problemName) {
-            index = i;
-            break;
-        }
+    if (!submission) {
+        return;
     }
-
-    if (index === -1) return;
-
-    if (user.problems[index].latest !== md5) return;
 
     const log = readFileSync(`./${path}`, 'utf-8');
     let point = log.split(/\r?\n/)[0].split(`${username}‣${problemName}: `)[1];
 
     if (statusEncode[point[0]]) {
-        user.problems[index].status = statusEncode[point[0]];
+        submission.status = statusEncode[point[0]];
         point = 0;
     } else {
-        user.problems[index].status = 1;
+        submission.status = 2;
         point = Number(point);
     }
 
-    user.problems[index].point = point;
-    user.problems[index].log = log;
+    submission.logs = log;
+    submission.score = point;
 
-    // console.log(user.problems);
-
-    await db.updateAsync({ username }, { $set: { problems: user.problems } }, {});
+    await db.submissions.updateAsync({ md5 }, { $set: { status: submission.status, logs: submission.logs, score: submission.score } }, {});
 }
 
 module.exports.handleSubmission = async (path, io) => {
@@ -64,7 +55,7 @@ module.exports.handleSubmission = async (path, io) => {
         const submissionWithSameMD5 = await db.submissions.findOneAsync({ md5 });
 
         if (submissionWithSameMD5) {
-            return rm(`./uploads/${user.problems[index].latest}[${username}][${problemName}].${extension}`, {
+            return rm(`./uploads/${submissionWithSameMD5.md5}[${username}][${problemName}].${extension}`, {
                 force: true
             }).catch(err => {
                 console.log(err);
