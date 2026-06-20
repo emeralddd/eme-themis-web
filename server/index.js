@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const fileupload = require("express-fileupload");
-const cors = require('cors');
 const chokidar = require('chokidar');
 require('dotenv').config();
 const { createServer } = require("http");
