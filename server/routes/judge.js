@@ -43,7 +43,7 @@ router.get('/getRanking', verifyToken, async (req, res) => {
         const data = await db.submissions
             .findAsync({ status: 2 })
             .sort({ submissionTime: -1 });
-
+            
         // Create a list of participants and their best score for each problem
         const participants = [];
 
@@ -81,7 +81,7 @@ router.get('/getRanking', verifyToken, async (req, res) => {
         res.json({
             success: true,
             payload: {
-                problems: Array.from(Set(problems)),
+                problems: Array.from(new Set(problems)),
                 users: participants
             }
         });
