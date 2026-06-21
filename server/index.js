@@ -58,10 +58,10 @@ app.use('/api/files', filesRouter);
 
 if (process.env.FRONTEND_INTEGRATION === 'true') {
     console.log('FRONTEND_INTEGRATION is enabled. Serving frontend from Express.');
-    app.use(express.static(path.join(__dirname, './frontend')));
+    app.use(express.static(path.join(__dirname, './public')));
     app.get("*", (req, res) => {
         res.sendFile(
-            path.join(__dirname, "./frontend/index.html")
+            path.join(__dirname, "./public/index.html")
         );
     });
 }
