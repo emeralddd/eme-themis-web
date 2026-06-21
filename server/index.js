@@ -5,11 +5,25 @@ const chokidar = require('chokidar');
 require('dotenv').config();
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const cors = require('cors');
 
 const PORT = process.env.PORT || 8000;
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer);
+
+let corsOptions = {};
+// If FRONTEND_INTEGRATION is false, enable CORS
+if (process.env.FRONTEND_INTEGRATION === 'false') {
+    corsOptions.cors = {
+        origin: process.env.FRONTEND_URL
+    };
+
+    app.use(cors({
+        origin: process.env.FRONTEND_URL
+    }));
+}
+
+const io = new Server(httpServer, corsOptions);
 
 const authRouter = require('./routes/auth');
 const judgeRouter = require('./routes/judge');
@@ -17,7 +31,12 @@ const filesRouter = require('./routes/files');
 const { handleLog, handleSubmission } = require('./utils/processSubmissions.js');
 const { existsSync, mkdirSync } = require('fs');
 
-const requiredFolders = ['./attachments', './uploads', './uploads/logs', './uploads/queue'];
+const requiredFolders = [
+    './attachments',
+    process.env.THEMIS_UPLOAD_PATH,
+    `${process.env.THEMIS_UPLOAD_PATH}/logs`,
+    `${process.env.THEMIS_UPLOAD_PATH}/queue`
+];
 
 requiredFolders.forEach(folder => {
     if (!existsSync(folder)) {
@@ -25,20 +44,20 @@ requiredFolders.forEach(folder => {
     }
 });
 
-// app.use(cors());
+
 app.use(express.json());
 app.use(fileupload());
 
 app.get('/api', (req, res) => {
-    res.send(process.env.NODE_ENV);
+    res.send('Backend is running!');
 });
 
 app.use('/api/auth', authRouter);
 app.use('/api/judge', judgeRouter);
 app.use('/api/files', filesRouter);
 
-if (process.env.NODE_ENV === 'production') {
-    console.log('PRODUCTION');
+if (process.env.FRONTEND_INTEGRATION === 'true') {
+    console.log('FRONTEND_INTEGRATION is enabled. Serving frontend from Express.');
     app.use(express.static(path.join(__dirname, './frontend')));
     app.get("*", (req, res) => {
         res.sendFile(
@@ -47,13 +66,13 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-const logWatcher = chokidar.watch('./uploads/logs', {
+const logWatcher = chokidar.watch(`${process.env.THEMIS_UPLOAD_PATH}/logs`, {
     ignored: /(^|[\/\\])\../,
     ignoreInitial: true,
     persistent: true
 });
 
-const submissionWatcher = chokidar.watch('./uploads/queue', {
+const submissionWatcher = chokidar.watch(`${process.env.THEMIS_UPLOAD_PATH}/queue`, {
     ignored: /(^|[\/\\])\../,
     ignoreInitial: true,
     persistent: true

@@ -1,7 +1,7 @@
 const { db } = require('../database/datasource.js');
 
 const express = require('express');
-
+require('dotenv').config();
 const verifyToken = require('../middleware/validate');
 const { ERROR_500, WRONG_ACCOUNT, MISSING_LOGIN_INFO, LOGIN_FAIL, LOGIN_SUCCESS, USERNAME_EXIST, SUCCESS } = require('../utils/VariableName.js');
 const router = express.Router();
@@ -19,7 +19,7 @@ router.post('/submit', verifyToken, async (req, res) => {
 
     let [fileName, fileExtension] = sourceFile.name.toUpperCase().split('.');
 
-    let uploadPath = `./uploads/queue/${sourceFile.md5}[${username}][${fileName}].${fileExtension}`;
+    let uploadPath = `${process.env.THEMIS_UPLOAD_PATH}/queue/${sourceFile.md5}[${username}][${fileName}].${fileExtension}`;
 
     sourceFile.mv(uploadPath, err => {
         if (err) {
