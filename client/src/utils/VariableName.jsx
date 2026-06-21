@@ -1,6 +1,6 @@
-export const apiURL = import.meta.env.PROD  ? '/api' : '/api'
+export const apiURL = import.meta.env.VITE_BACKEND_URL + '/api'
 
-export const hostURL = import.meta.env.PROD  ? '/' : '/'
+export const hostURL = import.meta.env.VITE_BACKEND_URL
 
 export const LOCAL_STORAGE_TOKEN_NAME = 'themis'
 
