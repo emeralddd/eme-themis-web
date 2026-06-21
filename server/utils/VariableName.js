@@ -1,3 +1,10 @@
+require('dotenv').config();
+const path = require('path');
+
+const userUploadPath = process.env.THEMIS_UPLOAD_PATH;
+
+module.exports.uploadPath = path.isAbsolute(userUploadPath) ? path.normalize(userUploadPath) : path.join(__dirname, '..', userUploadPath);
+
 module.exports.ERROR_500 = 'Server đang gặp lỗi!';
 
 module.exports.PATH_NOT_EXIST = 'Đường dẫn không tồn tại!';
