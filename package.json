@@ -1,8 +1,7 @@
 {
   "name": "eme-themis-web",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Website nạp bài thông qua mạng LAN/WAN sử dụng trình chấm Themis.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "npm run dev --prefix server",
@@ -10,20 +9,5 @@
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "emeralddd",
-  "license": "ISC",
-  "dependencies": {
-    "@seald-io/nedb": "^4.0.4",
-    "argon2": "^0.30.2",
-    "chokidar": "^3.5.3",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "express-fileupload": "^1.4.0",
-    "jsonwebtoken": "^8.5.1",
-    "prismjs": "^1.29.0",
-    "socket.io": "^4.5.4"
-  },
-  "devDependencies": {
-    "concurrently": "^7.6.0",
-    "nodemon": "^2.0.20"
-  }
+  "license": "ISC"
 }

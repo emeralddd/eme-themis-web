@@ -1,7 +1,7 @@
 {
-  "name": "client",
+  "name": "eme-themis-web-client",
+  "description": "Frontend client for the Themis web application",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
