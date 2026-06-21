@@ -14,6 +14,13 @@ router.get('/getAttachments', verifyToken, async (req, res) => {
     //path = /abc => attachment//abc
     //path = /abc/xyz.docx => attachment//abc/xyz.docx
 
+    if (dir.includes('..')) {
+        return res.status(400).json({
+            success: false,
+            message: PATH_NOT_EXIST
+        });
+    }
+
     try {
         const dirPath = path.join(__dirname, `../attachments/${dir}`);
         const ls = readdirSync(dirPath, {
@@ -32,14 +39,6 @@ router.get('/getAttachments', verifyToken, async (req, res) => {
                         isFolder: i.isDirectory()
                     });
                 });
-
-                // readFile(`${dirPath}/${i.name}`,(_,buffer) => {
-                //     resolve({
-                //         name: i.name,
-                //         buffer: buffer,
-                //         date: date.birthtime
-                //     });
-                // });
             }));
         }
 
@@ -72,6 +71,13 @@ router.get('/getAttachments', verifyToken, async (req, res) => {
 
 router.get('/getAttachmentBuffer', verifyToken, async (req, res) => {
     const dir = req.query.path;
+
+    if (dir.includes('..')) {
+        return res.status(400).json({
+            success: false,
+            message: PATH_NOT_EXIST
+        });
+    }
 
     try {
         const buffer = readFileSync(path.join(__dirname, `../attachments/${dir}`));
