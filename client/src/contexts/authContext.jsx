@@ -1,11 +1,7 @@
 import { createContext,useEffect, useMemo} from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import {
-    apiURL,
-    LOCAL_STORAGE_TOKEN_NAME
-} from '../utils/VariableName';
-import SetAuthToken from '../utils/SetAuthToken';
+import { apiURL } from '../utils/VariableName';
 
 export const AuthContext = createContext();
 
@@ -13,13 +9,6 @@ const AuthContextProvider = ({children}) => {
     const queryClient = useQueryClient();
     
     const loadUser = async () => {
-        const token = localStorage[LOCAL_STORAGE_TOKEN_NAME];
-        
-        if(!token) {
-            return null;
-        }
-        
-        SetAuthToken(token);
         const response = await axios.get(`${apiURL}/auth`);
         return response.data.payload;        
     };
@@ -33,8 +22,6 @@ const AuthContextProvider = ({children}) => {
     
     useEffect(() => {
         if(isError) {
-            localStorage.removeItem(LOCAL_STORAGE_TOKEN_NAME);
-            SetAuthToken(null);
             queryClient.setQueryData(['authUser'], null);
         }
     }, [isError]);
@@ -43,7 +30,6 @@ const AuthContextProvider = ({children}) => {
         mutationFn: (userForm) => axios.post(`${apiURL}/auth/login`, userForm),
         onSuccess: (response) => {
             if(response.data.success) {
-                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME, response.data.payload);
                 queryClient.invalidateQueries({ queryKey: ['authUser'] });
             }
         }
@@ -65,7 +51,6 @@ const AuthContextProvider = ({children}) => {
         mutationFn: (userForm) => axios.post(`${apiURL}/auth/register`, userForm),
         onSuccess: (response) => {
             if(response.data.success) {
-                localStorage.setItem(LOCAL_STORAGE_TOKEN_NAME, response.data.payload);
                 queryClient.invalidateQueries({ queryKey: ['authUser'] });
             }
         }
@@ -83,10 +68,17 @@ const AuthContextProvider = ({children}) => {
         }
     };
 
-    const logoutUser = () => {
-        localStorage.removeItem(LOCAL_STORAGE_TOKEN_NAME);
-        SetAuthToken(null);
-        queryClient.setQueryData(['authUser'], null);
+    const logoutUser = async () => {
+        try {
+            await axios.post(`${apiURL}/auth/logout`);
+        } catch (error) {
+            return error.response?.data || {
+                success: false,
+                message: error.message
+            };
+        } finally {
+            queryClient.setQueryData(['authUser'], null);
+        }
     };
 
     const authState = useMemo(() =>  ({

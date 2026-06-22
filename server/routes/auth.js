@@ -67,16 +67,22 @@ router.post('/login', async (req, res) => {
         const accessToken = jwt.sign(
             { username: foundUser.username },
             process.env.SECRET_TOKEN,
-            { 
+            {
                 algorithm: 'HS256',
                 expiresIn: "7d",
             }
         );
 
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: false, 
+            sameSite: 'strict', 
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({
             success: true,
             message: LOGIN_SUCCESS,
-            payload: accessToken
         });
     } catch (err) {
         console.log(err);
@@ -127,10 +133,16 @@ router.post('/register', async (req, res) => {
             }
         );
 
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
         res.json({
             success: true,
             message: SUCCESS,
-            payload: accessToken
         });
     } catch (err) {
         console.log(err);
@@ -140,5 +152,26 @@ router.post('/register', async (req, res) => {
         });
     }
 })
+
+router.post('/logout', (req, res) => {
+    try {
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'strict',
+        });
+
+        res.json({
+            success: true,
+            message: SUCCESS
+        });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            success: false,
+            message: ERROR_500
+        });
+    }
+});
 
 module.exports = router;

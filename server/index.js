@@ -7,21 +7,26 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const cors = require('cors');
 const { existsSync, mkdirSync } = require('fs');
+const cookieParser = require('cookie-parser');
+
 const { uploadPath } = require('./utils/VariableName.js');
 
 const PORT = process.env.PORT || 8000;
 const app = express();
+app.use(cookieParser());
 const httpServer = createServer(app);
 
 let corsOptions = {};
 // If FRONTEND_INTEGRATION is false, enable CORS
 if (process.env.FRONTEND_INTEGRATION === 'false') {
     corsOptions.cors = {
-        origin: process.env.FRONTEND_URL
+        origin: process.env.FRONTEND_URL,
+        credentials: true
     };
     
     app.use(cors({
-        origin: process.env.FRONTEND_URL
+        origin: process.env.FRONTEND_URL,
+        credentials: true
     }));
 }
 
