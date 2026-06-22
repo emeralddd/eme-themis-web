@@ -39,7 +39,6 @@ const WorkingArea = () => {
 
     const getProblems = async () => {
         const response = await axios.get(`${apiURL}/judge/getUserProblems`);
-        console.log(response.data.payload);
         return response.data.payload;
     }
 
@@ -110,7 +109,7 @@ const WorkingArea = () => {
             <div className="flex flex-col gap-2">
                 {
                     problems.map((problem, i) => (
-                        <div className={`${log && log.name === problem.problem ? `bg-gray-200` : `bg-white`} font-bold border border-slate-300 flex flex-col rounded p-2 hover:cursor-pointer overflow-y-auto`} onClick={onClickChangeLog.bind(this, problem)} >
+                        <div key={i} className={`${log && log.problem === problem.problem ? `bg-gray-200` : `bg-white`} font-bold border border-slate-300 flex flex-col rounded p-2 hover:cursor-pointer overflow-y-auto`} onClick={onClickChangeLog.bind(this, problem)} >
                             <div className='flex gap-4'>
                                 <div className={`${bg[problem.status]} rounded w-20 flex items-center justify-center`}>
                                     {
