@@ -63,14 +63,18 @@ app.use('/api/judge', judgeRouter);
 app.use('/api/files', filesRouter);
 
 if (process.env.FRONTEND_INTEGRATION === 'true') {
-    console.log('FRONTEND_INTEGRATION is enabled. Serving frontend from Express.');
+    console.log('Running with frontend integration.');
     app.use(express.static(path.join(__dirname, './public')));
     app.get("*", (req, res) => {
         res.sendFile(
             path.join(__dirname, "./public/index.html")
         );
     });
+} else {
+    console.log('Running without frontend integration. CORS enabled for:', process.env.FRONTEND_URL);
 }
+
+console.log('Upload path set to:', uploadPath);
 
 const logWatcher = chokidar.watch(`${uploadPath}/logs`, {
     ignored: /(^|[\/\\])\../,
@@ -91,14 +95,18 @@ submissionWatcher
     .on('add', path => (!path.endsWith('.log')) && handleSubmission(path, io));
 
 io.on("connection", (socket) => {
-    console.log("New client connected", socket.id);
+    if (process.env.NODE_ENV === 'development') {
+        console.log("New client connected", socket.id);
+    }
 
     socket.on("disconnect", () => {
-        console.log("Client disconnected");
+        if (process.env.NODE_ENV === 'development') {
+            console.log("Client disconnected");
+        }
     });
 
 });
 
 httpServer.listen(PORT, () => {
-    console.log(`Express server listening on port ${PORT}`);
+    console.log(`Server listening on port ${PORT}.`);
 });

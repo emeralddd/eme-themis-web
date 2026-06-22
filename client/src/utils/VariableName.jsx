@@ -1,4 +1,4 @@
-export const hostURL = import.meta.env.DEV ? '' : import.meta.env.VITE_BACKEND_URL
+export const hostURL = import.meta.env.DEV || import.meta.env.VITE_FRONTEND_INTEGRATION === 'true' ? '' : import.meta.env.VITE_BACKEND_URL
 
 export const apiURL = hostURL + '/api'
 
