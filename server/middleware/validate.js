@@ -13,7 +13,7 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const tokenDecoded = jwt.verify(tokenReceived,process.env.SECRET_TOKEN);
+        const tokenDecoded = jwt.verify(tokenReceived, process.env.SECRET_TOKEN, { algorithm: 'HS256' });
 
         req.executor = {
             username: tokenDecoded.username,

@@ -67,7 +67,10 @@ router.post('/login', async (req, res) => {
         const accessToken = jwt.sign(
             { username: foundUser.username },
             process.env.SECRET_TOKEN,
-            { expiresIn: "7d" }
+            { 
+                algorithm: 'HS256',
+                expiresIn: "7d",
+            }
         );
 
         res.json({
@@ -118,7 +121,10 @@ router.post('/register', async (req, res) => {
             username: username.toLowerCase()
         },
             process.env.SECRET_TOKEN,
-            { expiresIn: "7d" }
+            {
+                algorithm: 'HS256',
+                expiresIn: "7d",
+            }
         );
 
         res.json({
