@@ -68,13 +68,10 @@ const Attachments = () => {
             <div className="my-5 font-mont text-lg mx-3 flex">
                 {
                     path.split('/').map((d, i) => d && (
-                        <>
-                            <div key={`dir${i}`} className="hover:font-semibold hover:cursor-pointer px-2" onClick={returnPath.bind(this, i)}>
-                                {d}
-                            </div>
-
-                            <div key={`slash${i}`}>/</div>
-                        </>
+                        <div key={`dir${i}`} className="hover:font-semibold hover:cursor-pointer px-2" onClick={returnPath.bind(this, i)}>
+                            {d}
+                            <span className="ml-2">/</span>
+                        </div>
                     ))
                 }
             </div>
@@ -104,7 +101,7 @@ const Attachments = () => {
 
                         {
                             folders.map((f, i) => (
-                                <tr className="bg-white hover:bg-slate-100 group border-2 hover:cursor-pointer" key={"folder" + i} onClick={listDir.bind(this, `${path}${f.name}/`)}>
+                                <tr key={i} className="bg-white hover:bg-slate-100 group border-2 hover:cursor-pointer" key={"folder" + i} onClick={listDir.bind(this, `${path}${f.name}/`)}>
                                     <td className="pl-5 py-1">
                                         <i className="fa-solid fa-folder mx-3 w-5 text-center"></i>
                                         {f.name}
@@ -120,7 +117,7 @@ const Attachments = () => {
                                 const ext = f.name.split('.').reverse()[0];
                                 const size = f.size;
                                 return (
-                                    <tr className="bg-white hover:bg-slate-100 group border-2 hover:cursor-pointer" key={"files" + i} onClick={save.bind(this, f.name)}>
+                                    <tr key={i} className="bg-white hover:bg-slate-100 group border-2 hover:cursor-pointer" key={"files" + i} onClick={save.bind(this, f.name)}>
                                         <td className="pl-5 py-1">
                                             <i className={`fa-solid ${extension[ext] ? extension[ext] : 'fa-file'} mx-3 w-5 text-center`}></i>
                                             {f.name}
