@@ -2,8 +2,11 @@ require('dotenv').config();
 const path = require('path');
 
 const userUploadPath = process.env.THEMIS_UPLOAD_PATH;
+const publicAttachmentsPath = process.env.PUBLIC_ATTACHMENTS_PATH;
 
 module.exports.uploadPath = path.isAbsolute(userUploadPath) ? path.normalize(userUploadPath) : path.join(__dirname, '..', userUploadPath);
+
+module.exports.attachmentsPath = path.isAbsolute(publicAttachmentsPath) ? path.normalize(publicAttachmentsPath) : path.join(__dirname, '..', publicAttachmentsPath);
 
 module.exports.ERROR_500 = 'Server đang gặp lỗi!';
 

@@ -9,7 +9,7 @@ const cors = require('cors');
 const { existsSync, mkdirSync } = require('fs');
 const cookieParser = require('cookie-parser');
 
-const { uploadPath } = require('./utils/VariableName.js');
+const { uploadPath, attachmentsPath } = require('./utils/VariableName.js');
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -38,7 +38,7 @@ const filesRouter = require('./routes/files');
 const { handleLog, handleSubmission } = require('./utils/processSubmissions.js');
 
 const requiredFolders = [
-    path.join(__dirname, './attachments'),
+    attachmentsPath,
     uploadPath,
     `${uploadPath}/logs`,
     `${uploadPath}/queue`
@@ -75,6 +75,8 @@ if (process.env.FRONTEND_INTEGRATION === 'true') {
 }
 
 console.log('Upload path set to:', uploadPath);
+
+console.log('Attachments path set to:', attachmentsPath);
 
 const logWatcher = chokidar.watch(`${uploadPath}/logs`, {
     ignored: /(^|[\/\\])\../,

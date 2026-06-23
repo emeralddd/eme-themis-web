@@ -2,7 +2,7 @@ const express = require('express');
 const { readFileSync, readdirSync, readFile, statSync, stat } = require('fs');
 
 const verifyToken = require('../middleware/validate');
-const { PATH_NOT_EXIST } = require('../utils/VariableName');
+const { PATH_NOT_EXIST, attachmentsPath } = require('../utils/VariableName');
 const path = require('path');
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.get('/getAttachments', verifyToken, async (req, res) => {
     }
 
     try {
-        const dirPath = path.join(__dirname, `../attachments/${dir}`);
+        const dirPath = path.join(attachmentsPath, dir);
         const ls = readdirSync(dirPath, {
             withFileTypes: true
         });
@@ -80,7 +80,7 @@ router.get('/getAttachmentBuffer', verifyToken, async (req, res) => {
     }
 
     try {
-        const buffer = readFileSync(path.join(__dirname, `../attachments/${dir}`));
+        const buffer = readFileSync(path.join(attachmentsPath, dir));
 
         res.json({
             success: true,
