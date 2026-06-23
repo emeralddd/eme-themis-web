@@ -19,9 +19,9 @@ router.post('/submit', verifyToken, async (req, res) => {
 
     let [fileName, fileExtension] = sourceFile.name.toUpperCase().split('.');
 
-    let uploadPath = `${uploadPath}/queue/${sourceFile.md5}[${username}][${fileName}].${fileExtension}`;
+    let fileUploadPath = `${uploadPath}/queue/${sourceFile.md5}[${username}][${fileName}].${fileExtension}`;
 
-    sourceFile.mv(uploadPath, err => {
+    sourceFile.mv(fileUploadPath, err => {
         if (err) {
             console.log(err);
             return res.status(500).json({

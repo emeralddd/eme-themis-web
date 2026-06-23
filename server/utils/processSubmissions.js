@@ -47,18 +47,18 @@ module.exports.handleLog = async (path, io) => {
     await db.submissions.updateAsync({ md5 }, { $set: { status: submission.status, logs: submission.logs, score: submission.score } }, {});
 }
 
-module.exports.handleSubmission = async (path, io) => {
-    const [md5, username, problemName, extension] = fetchPath(path);
+module.exports.handleSubmission = async (filePath, io) => {
+    const [md5, username, problemName, extension] = fetchPath(filePath);
 
     io.emit("reload", { data: username });
 
     try {
-        const fileContent = readFileSync(path, 'utf-8');
+        const fileContent = readFileSync(filePath, 'utf-8');
 
         const submissionWithSameMD5 = await db.submissions.findOneAsync({ md5 });
 
         if (submissionWithSameMD5) {
-            return rm(path, {
+            return rm(filePath, {
                 force: true
             }).catch(err => {
                 console.log(err);
@@ -78,7 +78,9 @@ module.exports.handleSubmission = async (path, io) => {
         
         await db.submissions.insertAsync(newSubmission);
 
-        await rename(path, path.join(uploadPath , `${md5}[${username}][${problemName}].${extension}`));
+        console.log(path.join(uploadPath , `${md5}[${username}][${problemName}].${extension}`));
+
+        await rename(filePath, path.join(uploadPath , `${md5}[${username}][${problemName}].${extension}`));
     } catch (err) {
         console.error(err);
     }
