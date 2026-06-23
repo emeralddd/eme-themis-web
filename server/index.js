@@ -9,6 +9,15 @@ const cors = require('cors');
 const { existsSync, mkdirSync } = require('fs');
 const cookieParser = require('cookie-parser');
 
+const requiredEnvVars = ['THEMIS_UPLOAD_PATH', 'PUBLIC_ATTACHMENTS_PATH', 'FRONTEND_INTEGRATION', 'FRONTEND_URL'];
+
+requiredEnvVars.forEach((varName) => {
+    if (!process.env[varName]) {
+        console.error(`Error: Environment variable '${varName}' is not set. Please set it in your .env file.\r\nHint: You might forget to rename .env.example to .env and fill in the values.`);
+        process.exit(1);
+    }
+});
+
 const { uploadPath, attachmentsPath } = require('./utils/VariableName.js');
 
 const PORT = process.env.PORT || 8000;
@@ -49,7 +58,6 @@ requiredFolders.forEach(folder => {
         mkdirSync(folder);
     }
 });
-
 
 app.use(express.json());
 app.use(fileupload());
